@@ -18,7 +18,7 @@ a mock (MSW) backend, then the real NestJS core is wired in without UI rewrites.
 | **D — Reliability & live** | Scheduled/cron view, Dead-letter queue + replay, Fleet/workers (heartbeats, leases, in-flight), live updates over a mock WebSocket feed | ✅ Done |
 | **E — AI advisory panel** | Advisories page: severity-coded cards, confidence, acknowledge, live arrivals | ✅ Done |
 | **B — Auth UI** | Login / signup, JWT session persistence, protected routes, user/org menu with sign-out | ✅ Done |
-| **F — Polish** | Empty/loading/error states, responsive, a11y, component tests (Vitest + Testing Library) | ⬜ Planned |
+| **F — Polish** | Component tests (Vitest + Testing Library), vendor code-splitting, empty/loading states, mobile nav | ✅ Done |
 
 ## Backend phases (per the original brief, after the frontend)
 
