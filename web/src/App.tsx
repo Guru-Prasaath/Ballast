@@ -6,7 +6,7 @@ import { QueuesPage } from '@/pages/queues'
 import { ScheduledPage } from '@/pages/scheduled'
 import { DeadLetterPage } from '@/pages/dead-letter'
 import { WorkersPage } from '@/pages/workers'
-import { PlaceholderPage } from '@/pages/placeholder'
+import { AdvisoriesPage } from '@/pages/advisories'
 
 export default function App() {
   return (
@@ -19,16 +19,7 @@ export default function App() {
           <Route path="scheduled" element={<ScheduledPage />} />
           <Route path="dead-letter" element={<DeadLetterPage />} />
           <Route path="workers" element={<WorkersPage />} />
-          <Route
-            path="advisories"
-            element={
-              <PlaceholderPage
-                title="AI Advisories"
-                description="Recommendations from the advisory loop to heal failures."
-                phase="Phase E"
-              />
-            }
-          />
+          <Route path="advisories" element={<AdvisoriesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

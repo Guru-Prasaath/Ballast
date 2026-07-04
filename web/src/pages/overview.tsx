@@ -1,4 +1,5 @@
-import { CheckCircle2, Server, Skull, TrendingUp } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, CheckCircle2, Server, Skull, TrendingUp } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageHeader } from '@/components/page-header'
@@ -132,8 +133,14 @@ export function OverviewPage() {
 
       {topAdvisories.length > 0 && (
         <Card className="mt-4">
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">AI advisories</CardTitle>
+            <Link
+              to="/advisories"
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              View all <ArrowRight className="size-3.5" />
+            </Link>
           </CardHeader>
           <CardContent className="space-y-3">
             {topAdvisories.map((a) => (
