@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { useAuth } from '@/app/auth-provider'
+import { USE_MOCKS } from '@/lib/config'
 
 export function SignupPage() {
   const { signup } = useAuth()
@@ -96,9 +97,11 @@ export function SignupPage() {
           {submitting ? 'Creating…' : 'Create workspace'}
         </Button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Demo mode — this creates a mock session, no data is stored remotely.
-        </p>
+        {USE_MOCKS && (
+          <p className="text-center text-xs text-muted-foreground">
+            Demo mode — this creates a mock session, no data is stored remotely.
+          </p>
+        )}
       </form>
     </AuthShell>
   )

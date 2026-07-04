@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { useAuth } from '@/app/auth-provider'
+import { USE_MOCKS } from '@/lib/config'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -12,9 +13,9 @@ export function LoginPage() {
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/app'
 
-  // Prefilled with the mock backend's demo identity; any credentials work.
-  const [email, setEmail] = useState('ada@northwind.dev')
-  const [password, setPassword] = useState('demo1234')
+  // In mock mode any credentials work, so prefill the demo identity.
+  const [email, setEmail] = useState(USE_MOCKS ? 'ada@northwind.dev' : '')
+  const [password, setPassword] = useState(USE_MOCKS ? 'demo1234' : '')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -75,9 +76,11 @@ export function LoginPage() {
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Demo mode — any email and password will sign you in.
-        </p>
+        {USE_MOCKS && (
+          <p className="text-center text-xs text-muted-foreground">
+            Demo mode — any email and password will sign you in.
+          </p>
+        )}
       </form>
     </AuthShell>
   )

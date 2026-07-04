@@ -35,10 +35,20 @@ describe('LoginPage', () => {
     localStorage.clear()
   })
 
+  async function fillCredentials() {
+    const email = screen.getByLabelText(/email/i)
+    const password = screen.getByLabelText(/password/i)
+    await userEvent.clear(email)
+    await userEvent.type(email, 'ada@northwind.dev')
+    await userEvent.clear(password)
+    await userEvent.type(password, 'demo1234')
+  }
+
   it('posts credentials to the auth endpoint on submit', async () => {
     postMock.mockResolvedValue(fakeSession)
     renderLogin()
 
+    await fillCredentials()
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() =>
@@ -53,6 +63,7 @@ describe('LoginPage', () => {
     postMock.mockRejectedValue(new Error('nope'))
     renderLogin()
 
+    await fillCredentials()
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
     expect(await screen.findByText(/could not sign in/i)).toBeInTheDocument()
