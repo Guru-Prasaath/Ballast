@@ -13,4 +13,16 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split heavy vendors into their own chunks for better caching.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
+  },
 })
