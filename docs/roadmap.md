@@ -14,8 +14,8 @@ a mock (MSW) backend, then the real NestJS core is wired in without UI rewrites.
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | **A — Foundation** | Vite + React 18 + TS + Tailwind + shadcn/ui, dark mode, API contract, MSW mock layer, app shell (sidebar/topbar/routing), Overview page with live charts | ✅ Done |
+| **C — Core views** | Jobs table (filter by state, job detail drawer with attempts + retry), Queues (concurrency, retry policy, pause), Submit-job form (5 job types) | ✅ Done |
 | **B — Auth UI** | Login / signup / refresh flows, JWT storage, protected routes, org switcher | ⬜ Planned |
-| **C — Core views** | Jobs table (filter by state, job detail drawer with attempts), Queues (concurrency, retry policy, pause), Submit-job form (5 job types) | ⬜ Planned |
 | **D — Reliability & live** | Scheduled/cron view, Dead-letter queue + replay, Fleet/workers (heartbeats, leases, in-flight), WebSocket live updates | ⬜ Planned |
 | **E — AI advisory panel** | Insights/recommendations UI over mock advisories | ⬜ Planned |
 | **F — Polish** | Empty/loading/error states, responsive, a11y, component tests (Vitest + Testing Library) | ⬜ Planned |
