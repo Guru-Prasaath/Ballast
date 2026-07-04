@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { useAuth } from '@/app/auth-provider'
-import { USE_MOCKS } from '@/lib/config'
+import { DEMO_CREDENTIALS } from '@/lib/config'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -13,9 +13,9 @@ export function LoginPage() {
   const location = useLocation()
   const from = (location.state as { from?: string } | null)?.from ?? '/app'
 
-  // In mock mode any credentials work, so prefill the demo identity.
-  const [email, setEmail] = useState(USE_MOCKS ? 'ada@northwind.dev' : '')
-  const [password, setPassword] = useState(USE_MOCKS ? 'demo1234' : '')
+  // Prefill the shared demo account so reviewers can sign in with one click.
+  const [email, setEmail] = useState(DEMO_CREDENTIALS.email)
+  const [password, setPassword] = useState(DEMO_CREDENTIALS.password)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -76,11 +76,14 @@ export function LoginPage() {
           {submitting ? 'Signing in…' : 'Sign in'}
         </Button>
 
-        {USE_MOCKS && (
-          <p className="text-center text-xs text-muted-foreground">
-            Demo mode — any email and password will sign you in.
+        <div className="rounded-md border border-border/60 bg-muted/40 p-3 text-center text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">Reviewer demo account</p>
+          <p className="mt-0.5">
+            <span className="font-mono">{DEMO_CREDENTIALS.email}</span> ·{' '}
+            <span className="font-mono">{DEMO_CREDENTIALS.password}</span>
           </p>
-        )}
+          <p className="mt-0.5">Prefilled — just click Sign in, or create your own.</p>
+        </div>
       </form>
     </AuthShell>
   )

@@ -7,3 +7,12 @@
 export const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
 
 export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false'
+
+/**
+ * Shared demo account for reviewers. Seeded in the real backend via
+ * `npm run db:seed-demo`; in mock mode any credentials work anyway.
+ */
+export const DEMO_CREDENTIALS = {
+  email: 'demo@ballast.dev',
+  password: 'ballast-demo',
+}

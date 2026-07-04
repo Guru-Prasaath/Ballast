@@ -18,6 +18,7 @@ cd core
 cp .env.example .env            # set DATABASE_URL + JWT secrets
 npm install
 npm run db:migrate              # applies all migrations
+npm run db:seed-demo            # creates the reviewer demo account (idempotent)
 
 # web
 cd ../web
@@ -41,8 +42,10 @@ cd web && npm run dev                   # http://localhost:5173
 ## Manual end-to-end flow
 
 1. **Landing** — open http://localhost:5173. You get the marketing page.
-2. **Auth** — click *Get started* to sign up (creates an org + a seeded default
-   queue), or *Sign in* with the prefilled demo account. You land on `/app`.
+2. **Auth** — the login screen is **prefilled with the reviewer demo account**
+   (`demo@ballast.dev` / `ballast-demo`), so just click *Sign in*. Or click
+   *Get started* to create your own workspace (org + seeded default queue). You
+   land on `/app`.
 3. **Submit a job** — Jobs → *New job* → pick the `default` queue and a type →
    *Submit*. It appears as `ready`.
 4. **Watch it run** — within a second the worker claims it; the row goes
