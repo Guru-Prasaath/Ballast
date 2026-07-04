@@ -25,7 +25,7 @@ a mock (MSW) backend, then the real NestJS core is wired in without UI rewrites.
 0. ✅ Foundation: scaffold `/core`, Supabase via `DATABASE_URL`, health check with DB probe, Drizzle migration tooling, CI, Testcontainers
 1. ✅ Data model + auth (orgs, users, projects, queues, retry policies; JWT signup/login/refresh/me)
 2. ✅ Job submission + state machine (5 job types) + scheduler/promoter + cron
-3. Claiming engine: `SKIP LOCKED`, leases, heartbeats, concurrency limits, graceful shutdown
+3. ✅ Claiming engine: hand-written `SKIP LOCKED`, leases, heartbeats, per-queue concurrency (advisory locks), worker process, graceful shutdown
 4. Reliability: retries + backoff, dead-letter, reaper
 5. **Wire the dashboard to the real API** (replace MSW with core endpoints)
 6. AI advisory loop (separate Python service)
