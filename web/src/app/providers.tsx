@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ToasterProvider } from '@/components/toaster'
-import { LiveProvider } from '@/app/live-provider'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,9 +18,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToasterProvider>
-          <LiveProvider>
-            <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
-          </LiveProvider>
+          <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
         </ToasterProvider>
       </ThemeProvider>
     </QueryClientProvider>

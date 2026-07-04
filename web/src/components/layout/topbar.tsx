@@ -22,6 +22,16 @@ import { Brand } from './brand'
 import { NavList } from './nav-list'
 import { LiveIndicator } from './live-indicator'
 import { NAV_ITEMS } from '@/app/nav'
+import { useAuth } from '@/app/auth-provider'
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
 
 function usePageTitle(): string {
   const { pathname } = useLocation()
@@ -33,7 +43,10 @@ function usePageTitle(): string {
 
 export function Topbar() {
   const title = usePageTitle()
+  const { session, logout } = useAuth()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const user = session?.user
+  const org = session?.org
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur md:px-5">
@@ -62,20 +75,25 @@ export function Topbar() {
           <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Avatar className="size-8">
               <AvatarFallback className="bg-primary/15 text-primary">
-                AO
+                {user ? initials(user.name) : '—'}
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
-              <div className="font-medium">Ada Okoye</div>
+              <div className="font-medium">{user?.name}</div>
               <div className="text-xs font-normal text-muted-foreground">
-                ada@northwind.dev
+                {user?.email}
               </div>
+              {org && (
+                <div className="mt-1 text-xs font-normal text-muted-foreground">
+                  {org.name} · {user?.role}
+                </div>
+              )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled>Settings</DropdownMenuItem>
-            <DropdownMenuItem disabled>Sign out</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
