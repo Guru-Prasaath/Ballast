@@ -8,6 +8,8 @@ import { QueuesModule } from './queues/queues.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { ReaperModule } from './reaper/reaper.module';
 import { FleetModule } from './fleet/fleet.module';
+import { OverviewModule } from './overview/overview.module';
+import { AdvisoriesModule } from './advisories/advisories.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { FleetModule } from './fleet/fleet.module';
     SchedulerModule,
     ReaperModule,
     FleetModule,
+    OverviewModule,
+    AdvisoriesModule,
   ],
 })
 export class AppModule {}

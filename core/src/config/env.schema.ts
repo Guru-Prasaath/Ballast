@@ -10,6 +10,8 @@ export const envSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
+  /** Comma-separated allowed CORS origins for the dashboard. */
+  CORS_ORIGIN: z.string().default('http://localhost:5173'),
   /**
    * Postgres connection string. Use the Supabase session-mode pooler (5432) or
    * the direct connection — the transaction pooler (6543) lacks the session

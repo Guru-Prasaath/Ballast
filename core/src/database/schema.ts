@@ -13,6 +13,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
   unique,
@@ -233,6 +234,43 @@ export const jobAttempts = pgTable(
   }),
 );
 
+export const advisoryKind = pgEnum('advisory_kind', [
+  'retry_tuning',
+  'flaky_detection',
+  'anomaly',
+  'capacity',
+]);
+
+export const advisorySeverity = pgEnum('advisory_severity', [
+  'info',
+  'warning',
+  'critical',
+]);
+
+/**
+ * Recommendations produced by the AI advisory service (Phase 6). It writes here
+ * out-of-band; the core only reads and serves them, keeping AI off the hot path
+ * (invariant #6).
+ */
+export const advisories = pgTable('advisories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orgId: uuid('org_id')
+    .notNull()
+    .references(() => orgs.id, { onDelete: 'cascade' }),
+  kind: advisoryKind('kind').notNull(),
+  severity: advisorySeverity('severity').notNull(),
+  title: text('title').notNull(),
+  summary: text('summary').notNull(),
+  recommendation: text('recommendation').notNull(),
+  confidence: real('confidence').notNull(),
+  jobId: uuid('job_id').references(() => jobs.id, { onDelete: 'set null' }),
+  queueId: uuid('queue_id').references(() => queues.id, { onDelete: 'set null' }),
+  acknowledged: boolean('acknowledged').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // Convenience row types inferred from the schema.
 export type Org = typeof orgs.$inferSelect;
 export type User = typeof users.$inferSelect;
@@ -242,6 +280,7 @@ export type Queue = typeof queues.$inferSelect;
 export type Job = typeof jobs.$inferSelect;
 export type JobAttempt = typeof jobAttempts.$inferSelect;
 export type Worker = typeof workers.$inferSelect;
+export type Advisory = typeof advisories.$inferSelect;
 export type JobStatusValue = (typeof jobStatus.enumValues)[number];
 export type JobTypeValue = (typeof jobType.enumValues)[number];
 export type BackoffStrategyValue = (typeof backoffStrategy.enumValues)[number];

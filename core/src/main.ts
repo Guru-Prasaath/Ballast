@@ -18,6 +18,15 @@ async function bootstrap(): Promise<void> {
   app.enableShutdownHooks();
 
   const config = app.get(ConfigService<Env, true>);
+
+  app.enableCors({
+    origin: config
+      .get('CORS_ORIGIN', { infer: true })
+      .split(',')
+      .map((o) => o.trim()),
+    credentials: true,
+  });
+
   const port = config.get('PORT', { infer: true });
   await app.listen(port);
 

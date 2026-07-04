@@ -56,7 +56,11 @@ curl -i http://localhost:3000/health
 | `GET /api/v1/jobs/:id/attempts` | Bearer | Attempt history |
 | `POST /api/v1/jobs/:id/retry` | Bearer | Replay a failed/dead job |
 | `GET /api/v1/queues` | Bearer | Queues with per-status stats |
+| `GET /api/v1/retry-policies` | Bearer | Retry policies in the org |
 | `GET /api/v1/workers` | Bearer | Live worker fleet (heartbeats, in-flight) |
+| `GET /api/v1/overview` | Bearer | Dashboard stats (status counts, 24h throughput, success rate) |
+| `GET /api/v1/advisories` | Bearer | AI advisories (written by the Phase 6 service) |
+| `POST /api/v1/advisories/:id/ack` | Bearer | Acknowledge an advisory |
 
 Responses match the web dashboard's `types/api.ts` contract.
 
@@ -74,6 +78,8 @@ src/
   reaper/      returns expired-lease (crashed) jobs to ready/dead
   worker/      claim engine (raw SQL), backoff, handlers, worker loop
   fleet/       GET /workers
+  overview/    dashboard stats
+  advisories/  read AI advisories (written by the Phase 6 service)
   main.ts      API + scheduler bootstrap
   worker.ts    worker process bootstrap
 test/          Testcontainers integration tests

@@ -24,6 +24,17 @@ export interface QueueDto {
   stats: QueueStats;
 }
 
+export interface RetryPolicyDto {
+  id: string;
+  projectId: string;
+  name: string;
+  maxAttempts: number;
+  backoff: string;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  jitter: boolean;
+}
+
 type Db = NodePgDatabase<typeof schema>;
 
 const emptyStats = (): QueueStats => ({
@@ -65,6 +76,28 @@ export class QueuesService {
       createdAt: q.createdAt.toISOString(),
       stats: statsByQueue.get(q.id) ?? emptyStats(),
     }));
+  }
+
+  /** All retry policies in the org. */
+  async listRetryPolicies(orgId: string): Promise<RetryPolicyDto[]> {
+    const rows = await this.db
+      .select({
+        id: schema.retryPolicies.id,
+        projectId: schema.retryPolicies.projectId,
+        name: schema.retryPolicies.name,
+        maxAttempts: schema.retryPolicies.maxAttempts,
+        backoff: schema.retryPolicies.backoff,
+        baseDelayMs: schema.retryPolicies.baseDelayMs,
+        maxDelayMs: schema.retryPolicies.maxDelayMs,
+        jitter: schema.retryPolicies.jitter,
+      })
+      .from(schema.retryPolicies)
+      .innerJoin(
+        schema.projects,
+        eq(schema.retryPolicies.projectId, schema.projects.id),
+      )
+      .where(eq(schema.projects.orgId, orgId));
+    return rows;
   }
 
   private async statsByQueue(
