@@ -49,6 +49,12 @@ curl -i http://localhost:3000/health
 | `POST /api/v1/auth/login` | — | Return the account and access/refresh tokens |
 | `POST /api/v1/auth/refresh` | — | Exchange a refresh token for a new pair |
 | `GET /api/v1/me` | Bearer | The authenticated user and their org |
+| `POST /api/v1/jobs` | Bearer | Submit a job (immediate, delayed, or cron) |
+| `GET /api/v1/jobs` | Bearer | List jobs (filter by status/type/queue + paginate) |
+| `GET /api/v1/jobs/:id` | Bearer | Get a job |
+| `GET /api/v1/jobs/:id/attempts` | Bearer | Attempt history |
+| `POST /api/v1/jobs/:id/retry` | Bearer | Replay a failed/dead job |
+| `GET /api/v1/queues` | Bearer | Queues with per-status stats |
 
 Responses match the web dashboard's `types/api.ts` contract.
 
@@ -60,6 +66,9 @@ src/
   database/    pg Pool + Drizzle providers, schema, migrations, migrate runner
   health/      GET /health with a DB round-trip check
   auth/        signup/login/refresh, JWT tokens, guard, /me
+  jobs/        submission API, state machine, cron util
+  queues/      GET /queues with per-status stats
+  scheduler/   promoter: scheduled/cron jobs → ready
   main.ts      bootstrap: global validation, shutdown hooks
 test/          Testcontainers integration tests
 ```
