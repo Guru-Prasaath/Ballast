@@ -23,6 +23,9 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_ACCESS_TTL: z.string().default('15m'),
   JWT_REFRESH_TTL: z.string().default('7d'),
+
+  // How often the promoter moves due scheduled/cron jobs into `ready`.
+  SCHEDULER_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
 });
 
 export type Env = z.infer<typeof envSchema>;
