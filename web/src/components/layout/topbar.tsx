@@ -86,9 +86,14 @@ export function Topbar() {
                 {user?.email}
               </div>
               {org && (
-                <div className="mt-1 text-xs font-normal text-muted-foreground">
-                  {org.name} · {user?.role}
-                </div>
+                <>
+                  <div className="mt-1 text-xs font-normal text-muted-foreground">
+                    {org.name} · {user?.role}
+                  </div>
+                  <div className="mt-1 break-all font-mono text-[10px] font-normal text-muted-foreground">
+                    org {org.id}
+                  </div>
+                </>
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
