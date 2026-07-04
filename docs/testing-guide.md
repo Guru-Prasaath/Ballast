@@ -1,0 +1,95 @@
+# Ballast — Testing the whole flow
+
+How to run Ballast end-to-end and exercise every part of the system before the
+AI service (Phase 6) lands.
+
+## Prerequisites
+
+- Node 20+
+- A Supabase (or any Postgres) connection string in `core/.env` as `DATABASE_URL`
+  (use the **session pooler** URL, port 5432 — not the transaction pooler).
+- Docker Desktop — only needed for the integration tests (`npm run test:int`).
+
+## One-time setup
+
+```bash
+# core
+cd core
+cp .env.example .env            # set DATABASE_URL + JWT secrets
+npm install
+npm run db:migrate              # applies all migrations
+
+# web
+cd ../web
+npm install
+echo "VITE_USE_MOCKS=false" > .env   # talk to the real core
+```
+
+## Run the stack (3 terminals)
+
+```bash
+# 1) API + scheduler + reaper
+cd core && npm run start:dev            # http://localhost:3000
+
+# 2) a worker (start more than one to see a fleet)
+cd core && npm run start:worker:dev
+
+# 3) dashboard
+cd web && npm run dev                   # http://localhost:5173
+```
+
+## Manual end-to-end flow
+
+1. **Landing** — open http://localhost:5173. You get the marketing page.
+2. **Auth** — click *Get started* to sign up (creates an org + a seeded default
+   queue), or *Sign in* with the prefilled demo account. You land on `/app`.
+3. **Submit a job** — Jobs → *New job* → pick the `default` queue and a type →
+   *Submit*. It appears as `ready`.
+4. **Watch it run** — within a second the worker claims it; the row goes
+   `running` → `completed`. Open the job to see its attempt history.
+5. **Overview** — the dashboard shows throughput, success rate, and active
+   workers, refreshing as jobs complete.
+6. **Fleet** — the Fleet page lists your worker(s) with live heartbeats and
+   in-flight counts.
+
+## Exercise reliability
+
+- **Retries + dead-letter** — submit a job with payload
+  `{ "simulateFailure": true }` and `maxAttempts: 2`. Watch it go
+  `running → (backoff) → running → dead`, then find it on the **Dead-letter**
+  page and **Replay** it.
+- **Delayed / cron** — submit with a *Run at* time or a cron expression; it sits
+  on the **Scheduled** page until the promoter makes it `ready`.
+- **Graceful shutdown** — `Ctrl-C` a worker; it logs "Draining … before exit",
+  finishes in-flight jobs, and goes offline.
+- **Crash recovery (preview of Phase 7)** — with two workers running, submit
+  many jobs and `kill -9` one worker. Its in-flight jobs' leases expire and the
+  reaper returns them to `ready`; another worker finishes them. Nothing runs
+  twice.
+
+## Automated tests
+
+```bash
+# core — unit tests (no services needed)
+cd core && npm test
+
+# core — integration tests (Testcontainers; needs Docker)
+cd core && npm run test:int
+#   ↳ exactly-once under concurrent claims, per-queue concurrency limits,
+#     retry/backoff, dead-letter, the reaper, and the auth + job-submission flows.
+
+# web — component/unit tests
+cd web && npm test
+```
+
+CI (GitHub Actions) runs all of the above on every push.
+
+## Verifying the invariants
+
+| Invariant | Where to see it |
+| --------- | --------------- |
+| Exactly-once (`SKIP LOCKED`) | `core/src/worker/claim.service.ts`; `test/claim.int-spec.ts` |
+| Crash recovery via leases + reaper | `core/src/reaper/reaper.service.ts`; `test/reliability.int-spec.ts` |
+| Graceful shutdown (SIGTERM drain) | `core/src/worker/worker.service.ts` |
+| Per-queue concurrency limits | `claim.service.ts` advisory locks; `claim.int-spec.ts` |
+| AI is advisory/async | no AI on the claim path; advisories are DB rows served read-only |
