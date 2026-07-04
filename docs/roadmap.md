@@ -27,7 +27,7 @@ a mock (MSW) backend, then the real NestJS core is wired in without UI rewrites.
 2. ✅ Job submission + state machine (5 job types) + scheduler/promoter + cron
 3. ✅ Claiming engine: hand-written `SKIP LOCKED`, leases, heartbeats, per-queue concurrency (advisory locks), worker process, graceful shutdown
 4. ✅ Reliability: retries + backoff (fixed/linear/exponential + jitter), dead-letter, reaper (expired-lease recovery)
-5. **Wire the dashboard to the real API** (replace MSW with core endpoints)
+5. ✅ **Wire the dashboard to the real API** — overview/retry-policies/advisories endpoints + CORS; web toggles MSW off via `VITE_USE_MOCKS=false` (Vite proxy). Verified web → core → Supabase.
 6. AI advisory loop (separate Python service)
 7. Chaos test + hardening (`kill -9` proves exactly-once)
 8. Package + deploy
