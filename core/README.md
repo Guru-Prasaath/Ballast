@@ -16,8 +16,9 @@ probe with a real DB check, migration tooling, and tests.
 ```bash
 npm install
 cp .env.example .env        # set DATABASE_URL to your Supabase connection string
-npm run db:migrate          # apply migrations (no-op until Phase 1 adds tables)
-npm run start:dev           # http://localhost:3000
+npm run db:migrate          # apply migrations
+npm run start:dev           # API + scheduler on http://localhost:3000
+npm run start:worker:dev    # a worker process (run several for a fleet)
 ```
 
 Check health:
@@ -55,6 +56,7 @@ curl -i http://localhost:3000/health
 | `GET /api/v1/jobs/:id/attempts` | Bearer | Attempt history |
 | `POST /api/v1/jobs/:id/retry` | Bearer | Replay a failed/dead job |
 | `GET /api/v1/queues` | Bearer | Queues with per-status stats |
+| `GET /api/v1/workers` | Bearer | Live worker fleet (heartbeats, in-flight) |
 
 Responses match the web dashboard's `types/api.ts` contract.
 
@@ -69,7 +71,10 @@ src/
   jobs/        submission API, state machine, cron util
   queues/      GET /queues with per-status stats
   scheduler/   promoter: scheduled/cron jobs → ready
-  main.ts      bootstrap: global validation, shutdown hooks
+  worker/      claim engine (raw SQL), handlers, worker loop
+  fleet/       GET /workers
+  main.ts      API + scheduler bootstrap
+  worker.ts    worker process bootstrap
 test/          Testcontainers integration tests
 ```
 
