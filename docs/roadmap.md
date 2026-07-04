@@ -22,7 +22,7 @@ a mock (MSW) backend, then the real NestJS core is wired in without UI rewrites.
 
 ## Backend phases (per the original brief, after the frontend)
 
-0. Foundation: scaffold `/core`, Supabase via `DATABASE_URL`, health check, Drizzle migrations, CI, Testcontainers
+0. ✅ Foundation: scaffold `/core`, Supabase via `DATABASE_URL`, health check with DB probe, Drizzle migration tooling, CI, Testcontainers
 1. Data model + auth (orgs, users, projects, queues, retry policies; JWT)
 2. Job submission + state machine (5 job types) + scheduler/promoter + cron
 3. Claiming engine: `SKIP LOCKED`, leases, heartbeats, concurrency limits, graceful shutdown
