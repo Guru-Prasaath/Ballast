@@ -71,7 +71,8 @@ src/
   jobs/        submission API, state machine, cron util
   queues/      GET /queues with per-status stats
   scheduler/   promoter: scheduled/cron jobs → ready
-  worker/      claim engine (raw SQL), handlers, worker loop
+  reaper/      returns expired-lease (crashed) jobs to ready/dead
+  worker/      claim engine (raw SQL), backoff, handlers, worker loop
   fleet/       GET /workers
   main.ts      API + scheduler bootstrap
   worker.ts    worker process bootstrap

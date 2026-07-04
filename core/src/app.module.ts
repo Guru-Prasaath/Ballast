@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { QueuesModule } from './queues/queues.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { ReaperModule } from './reaper/reaper.module';
 import { FleetModule } from './fleet/fleet.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { FleetModule } from './fleet/fleet.module';
     JobsModule,
     QueuesModule,
     SchedulerModule,
+    ReaperModule,
     FleetModule,
   ],
 })

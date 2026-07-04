@@ -26,6 +26,8 @@ export const envSchema = z.object({
 
   // How often the promoter moves due scheduled/cron jobs into `ready`.
   SCHEDULER_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
+  // How often the reaper returns expired-lease (crashed) jobs to `ready`.
+  REAPER_INTERVAL_MS: z.coerce.number().int().positive().default(5000),
 
   // Worker tuning.
   WORKER_CONCURRENCY: z.coerce.number().int().positive().default(10),
