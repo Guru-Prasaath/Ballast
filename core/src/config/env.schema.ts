@@ -16,6 +16,13 @@ export const envSchema = z.object({
    * features the worker's LISTEN/NOTIFY path needs.
    */
   DATABASE_URL: z.string().url(),
+
+  // Separate secrets so a leaked access token can't be replayed as a refresh
+  // token. Keep these out of source — env only.
+  JWT_ACCESS_SECRET: z.string().min(16),
+  JWT_REFRESH_SECRET: z.string().min(16),
+  JWT_ACCESS_TTL: z.string().default('15m'),
+  JWT_REFRESH_TTL: z.string().default('7d'),
 });
 
 export type Env = z.infer<typeof envSchema>;

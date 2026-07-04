@@ -40,13 +40,26 @@ curl -i http://localhost:3000/health
 | `npm run db:generate` | Generate a migration from `src/database/schema.ts` |
 | `npm run db:migrate` | Apply pending migrations (needs `DATABASE_URL`) |
 
+## API
+
+| Method & path | Auth | Purpose |
+| ------------- | ---- | ------- |
+| `GET /health` | — | Liveness + DB readiness |
+| `POST /api/v1/auth/signup` | — | Create org + owner (seeds a default project, retry policy, and queue) |
+| `POST /api/v1/auth/login` | — | Return the account and access/refresh tokens |
+| `POST /api/v1/auth/refresh` | — | Exchange a refresh token for a new pair |
+| `GET /api/v1/me` | Bearer | The authenticated user and their org |
+
+Responses match the web dashboard's `types/api.ts` contract.
+
 ## Layout
 
 ```
 src/
   config/      validated environment (zod)
-  database/    pg Pool + Drizzle providers, migrations, migrate runner
+  database/    pg Pool + Drizzle providers, schema, migrations, migrate runner
   health/      GET /health with a DB round-trip check
+  auth/        signup/login/refresh, JWT tokens, guard, /me
   main.ts      bootstrap: global validation, shutdown hooks
 test/          Testcontainers integration tests
 ```
