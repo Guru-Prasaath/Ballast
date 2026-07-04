@@ -12,6 +12,14 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Proxy API calls to the core in dev so the relative `/api/v1` base works
+    // same-origin (no CORS). Only used when VITE_USE_MOCKS=false.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

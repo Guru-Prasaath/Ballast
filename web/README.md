@@ -17,8 +17,22 @@ NestJS API lands, the mock layer is removed and nothing else changes.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173  (MSW mock backend starts automatically in dev)
+npm run dev      # http://localhost:5173  (MSW mock backend starts automatically)
 ```
+
+### Run against the real core API
+
+By default the app uses the MSW mock backend. To talk to the live core instead:
+
+```bash
+# 1. Start the core (in ../core): npm run start:dev   (and a worker: npm run start:worker:dev)
+# 2. In web/.env:
+echo "VITE_USE_MOCKS=false" > .env
+npm run dev
+```
+
+In dev, Vite proxies `/api/v1` → `http://localhost:3000` (same-origin, no CORS).
+The login screen is prefilled with the seeded demo account.
 
 ## Scripts
 

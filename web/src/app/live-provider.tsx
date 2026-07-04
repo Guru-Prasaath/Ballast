@@ -8,6 +8,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/hooks/queries'
 import { useToast } from '@/components/toaster'
+import { USE_MOCKS } from '@/lib/config'
 import type { Worker } from '@/types/api'
 
 type LiveStatus = 'connecting' | 'live'
@@ -36,7 +37,12 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
   toastRef.current = toast
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return
+    // Against the real API there is no mock socket; TanStack Query's polling
+    // (refetchInterval) keeps the dashboard fresh, so report "live" and return.
+    if (!USE_MOCKS) {
+      setStatus('live')
+      return
+    }
     let active = true
     let cleanup: (() => void) | undefined
 

@@ -3,7 +3,9 @@
  * here so swapping the mock (MSW) layer for the real core API is a no-op for
  * callers. The access token is injected from module state set at login.
  */
-const BASE = '/api/v1'
+import { API_BASE } from './config'
+
+const BASE = API_BASE
 
 let accessToken: string | null = null
 
