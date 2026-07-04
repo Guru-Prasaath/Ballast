@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout'
 import { OverviewPage } from '@/pages/overview'
+import { JobsPage } from '@/pages/jobs'
+import { QueuesPage } from '@/pages/queues'
 import { PlaceholderPage } from '@/pages/placeholder'
 
 export default function App() {
@@ -9,26 +11,8 @@ export default function App() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route index element={<OverviewPage />} />
-          <Route
-            path="jobs"
-            element={
-              <PlaceholderPage
-                title="Jobs"
-                description="Browse, filter, and inspect every job across your queues."
-                phase="Phase C"
-              />
-            }
-          />
-          <Route
-            path="queues"
-            element={
-              <PlaceholderPage
-                title="Queues"
-                description="Concurrency limits, retry policies, and per-queue health."
-                phase="Phase C"
-              />
-            }
-          />
+          <Route path="jobs" element={<JobsPage />} />
+          <Route path="queues" element={<QueuesPage />} />
           <Route
             path="scheduled"
             element={
