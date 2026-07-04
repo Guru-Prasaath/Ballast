@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { QueuesModule } from './queues/queues.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { FleetModule } from './fleet/fleet.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     JobsModule,
     QueuesModule,
     SchedulerModule,
+    FleetModule,
   ],
 })
 export class AppModule {}

@@ -15,6 +15,13 @@
       "when": 1783186841161,
       "tag": "0001_productive_sue_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783189869137,
+      "tag": "0002_supreme_lifeguard",
+      "breakpoints": true
     }
   ]
 }

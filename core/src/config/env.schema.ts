@@ -26,6 +26,14 @@ export const envSchema = z.object({
 
   // How often the promoter moves due scheduled/cron jobs into `ready`.
   SCHEDULER_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
+
+  // Worker tuning.
+  WORKER_CONCURRENCY: z.coerce.number().int().positive().default(10),
+  WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(500),
+  LEASE_DURATION_MS: z.coerce.number().int().positive().default(30000),
+  HEARTBEAT_INTERVAL_MS: z.coerce.number().int().positive().default(10000),
+  // Comma-separated queue names this worker serves (cosmetic/fleet display).
+  WORKER_QUEUES: z.string().default('default'),
 });
 
 export type Env = z.infer<typeof envSchema>;

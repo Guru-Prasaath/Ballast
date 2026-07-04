@@ -133,6 +133,30 @@ export const jobStatus = pgEnum('job_status', [
 
 export const attemptStatus = pgEnum('attempt_status', ['succeeded', 'failed']);
 
+export const workerStatus = pgEnum('worker_status', [
+  'active',
+  'idle',
+  'draining',
+  'offline',
+]);
+
+export const workers = pgTable('workers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  hostname: text('hostname').notNull(),
+  pid: integer('pid').notNull(),
+  status: workerStatus('status').notNull().default('active'),
+  queues: text('queues').array().notNull(),
+  concurrency: integer('concurrency').notNull(),
+  inFlight: integer('in_flight').notNull().default(0),
+  version: text('version').notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  lastHeartbeatAt: timestamp('last_heartbeat_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const jobs = pgTable(
   'jobs',
   {
@@ -217,5 +241,6 @@ export type RetryPolicy = typeof retryPolicies.$inferSelect;
 export type Queue = typeof queues.$inferSelect;
 export type Job = typeof jobs.$inferSelect;
 export type JobAttempt = typeof jobAttempts.$inferSelect;
+export type Worker = typeof workers.$inferSelect;
 export type JobStatusValue = (typeof jobStatus.enumValues)[number];
 export type JobTypeValue = (typeof jobType.enumValues)[number];
