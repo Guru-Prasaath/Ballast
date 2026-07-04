@@ -3,6 +3,9 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { OverviewPage } from '@/pages/overview'
 import { JobsPage } from '@/pages/jobs'
 import { QueuesPage } from '@/pages/queues'
+import { ScheduledPage } from '@/pages/scheduled'
+import { DeadLetterPage } from '@/pages/dead-letter'
+import { WorkersPage } from '@/pages/workers'
 import { PlaceholderPage } from '@/pages/placeholder'
 
 export default function App() {
@@ -13,36 +16,9 @@ export default function App() {
           <Route index element={<OverviewPage />} />
           <Route path="jobs" element={<JobsPage />} />
           <Route path="queues" element={<QueuesPage />} />
-          <Route
-            path="scheduled"
-            element={
-              <PlaceholderPage
-                title="Scheduled"
-                description="Delayed and cron jobs waiting to become eligible."
-                phase="Phase D"
-              />
-            }
-          />
-          <Route
-            path="dead-letter"
-            element={
-              <PlaceholderPage
-                title="Dead-letter"
-                description="Jobs that exhausted their retries, ready to replay."
-                phase="Phase D"
-              />
-            }
-          />
-          <Route
-            path="workers"
-            element={
-              <PlaceholderPage
-                title="Fleet"
-                description="Live workers, heartbeats, leases, and in-flight jobs."
-                phase="Phase D"
-              />
-            }
-          />
+          <Route path="scheduled" element={<ScheduledPage />} />
+          <Route path="dead-letter" element={<DeadLetterPage />} />
+          <Route path="workers" element={<WorkersPage />} />
           <Route
             path="advisories"
             element={
