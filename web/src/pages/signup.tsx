@@ -23,7 +23,7 @@ export function SignupPage() {
     setSubmitting(true)
     try {
       await signup({ orgName, name, email, password })
-      navigate('/', { replace: true })
+      navigate('/app', { replace: true })
     } catch {
       setError('Could not create your account. Please try again.')
     } finally {

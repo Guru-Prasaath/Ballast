@@ -10,7 +10,7 @@ export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
+  const from = (location.state as { from?: string } | null)?.from ?? '/app'
 
   // Prefilled with the mock backend's demo identity; any credentials work.
   const [email, setEmail] = useState('ada@northwind.dev')

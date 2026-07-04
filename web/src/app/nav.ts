@@ -18,11 +18,11 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Overview', to: '/', icon: LayoutDashboard, end: true },
-  { label: 'Jobs', to: '/jobs', icon: ListChecks },
-  { label: 'Queues', to: '/queues', icon: Anchor },
-  { label: 'Scheduled', to: '/scheduled', icon: CalendarClock },
-  { label: 'Dead-letter', to: '/dead-letter', icon: Skull },
-  { label: 'Fleet', to: '/workers', icon: Server },
-  { label: 'AI Advisories', to: '/advisories', icon: Sparkles },
+  { label: 'Overview', to: '/app', icon: LayoutDashboard, end: true },
+  { label: 'Jobs', to: '/app/jobs', icon: ListChecks },
+  { label: 'Queues', to: '/app/queues', icon: Anchor },
+  { label: 'Scheduled', to: '/app/scheduled', icon: CalendarClock },
+  { label: 'Dead-letter', to: '/app/dead-letter', icon: Skull },
+  { label: 'Fleet', to: '/app/workers', icon: Server },
+  { label: 'AI Advisories', to: '/app/advisories', icon: Sparkles },
 ]

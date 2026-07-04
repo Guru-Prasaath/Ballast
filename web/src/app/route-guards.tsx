@@ -26,6 +26,6 @@ export function ProtectedLayout() {
 /** Keeps authenticated users out of the login/signup screens. */
 export function PublicOnly({ children }: { children: React.ReactNode }) {
   const { status } = useAuth()
-  if (status === 'authenticated') return <Navigate to="/" replace />
+  if (status === 'authenticated') return <Navigate to="/app" replace />
   return <>{children}</>
 }
