@@ -1,8 +1,8 @@
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
-import { validateEnv } from '../config/env.schema';
 
 const MIGRATIONS_FOLDER = join(__dirname, 'migrations');
 
@@ -22,8 +22,15 @@ export async function runMigrations(databaseUrl: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const env = validateEnv(process.env);
-  await runMigrations(env.DATABASE_URL);
+  // Load .env for local runs; in CI the environment is already populated.
+  if (existsSync('.env')) {
+    process.loadEnvFile('.env');
+  }
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required to run migrations');
+  }
+  await runMigrations(databaseUrl);
   // eslint-disable-next-line no-console
   console.log('Migrations applied.');
 }
