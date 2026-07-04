@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { gt, sql } from 'drizzle-orm';
+import { and, eq, gt, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../database/database.constants';
 import * as schema from '../database/schema';
@@ -23,12 +23,17 @@ type Db = NodePgDatabase<typeof schema>;
 export class FleetService {
   constructor(@Inject(DRIZZLE) private readonly db: Db) {}
 
-  /** Workers seen in the last two minutes — the live fleet, not stale rows. */
-  async list(): Promise<WorkerDto[]> {
+  /** This org's workers seen in the last two minutes — the live fleet. */
+  async list(orgId: string): Promise<WorkerDto[]> {
     const rows = await this.db
       .select()
       .from(schema.workers)
-      .where(gt(schema.workers.lastHeartbeatAt, sql`now() - interval '2 minutes'`))
+      .where(
+        and(
+          eq(schema.workers.orgId, orgId),
+          gt(schema.workers.lastHeartbeatAt, sql`now() - interval '2 minutes'`),
+        ),
+      )
       .orderBy(schema.workers.startedAt);
 
     return rows.map((w) => ({

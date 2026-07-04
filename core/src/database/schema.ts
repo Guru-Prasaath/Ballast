@@ -143,6 +143,9 @@ export const workerStatus = pgEnum('worker_status', [
 
 export const workers = pgTable('workers', {
   id: uuid('id').primaryKey().defaultRandom(),
+  // The org this worker serves. Nullable only to tolerate pre-existing rows;
+  // every worker registers with one.
+  orgId: uuid('org_id').references(() => orgs.id, { onDelete: 'cascade' }),
   hostname: text('hostname').notNull(),
   pid: integer('pid').notNull(),
   status: workerStatus('status').notNull().default('active'),

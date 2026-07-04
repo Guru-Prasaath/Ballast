@@ -8,6 +8,7 @@ type Db = NodePgDatabase<typeof schema>;
 type WorkerStatusValue = (typeof schema.workerStatus.enumValues)[number];
 
 export interface WorkerRegistration {
+  orgId: string;
   hostname: string;
   pid: number;
   queues: string[];
@@ -24,6 +25,7 @@ export class WorkerRegistry {
     const [row] = await this.db
       .insert(schema.workers)
       .values({
+        orgId: info.orgId,
         hostname: info.hostname,
         pid: info.pid,
         queues: info.queues,

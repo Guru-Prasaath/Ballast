@@ -38,6 +38,9 @@ export const envSchema = z.object({
   HEARTBEAT_INTERVAL_MS: z.coerce.number().int().positive().default(10000),
   // Comma-separated queue names this worker serves (cosmetic/fleet display).
   WORKER_QUEUES: z.string().default('default'),
+  // The org this worker process serves. Required for a worker (enforced at
+  // boot); unused by the API. Find yours via GET /api/v1/me.
+  WORKER_ORG_ID: z.string().uuid().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

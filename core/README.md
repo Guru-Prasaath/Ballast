@@ -18,7 +18,8 @@ npm install
 cp .env.example .env        # set DATABASE_URL to your Supabase connection string
 npm run db:migrate          # apply migrations
 npm run start:dev           # API + scheduler on http://localhost:3000
-npm run start:worker:dev    # a worker process (run several for a fleet)
+# Workers are org-scoped — set WORKER_ORG_ID (find yours via GET /api/v1/me):
+WORKER_ORG_ID=<org-id> npm run start:worker:dev
 ```
 
 Check health:

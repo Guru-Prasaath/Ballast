@@ -41,7 +41,7 @@ export class OverviewService {
     const [byStatus, activeWorkers, throughput, deadLettered24h] =
       await Promise.all([
         this.jobsByStatus(orgId),
-        this.activeWorkers(),
+        this.activeWorkers(orgId),
         this.throughput(orgId),
         this.deadLettered24h(orgId),
       ]);
@@ -73,12 +73,15 @@ export class OverviewService {
     return counts;
   }
 
-  private async activeWorkers(): Promise<number> {
+  private async activeWorkers(orgId: string): Promise<number> {
     const [{ value }] = await this.db
       .select({ value: count() })
       .from(schema.workers)
       .where(
-        gt(schema.workers.lastHeartbeatAt, sql`now() - interval '2 minutes'`),
+        and(
+          eq(schema.workers.orgId, orgId),
+          gt(schema.workers.lastHeartbeatAt, sql`now() - interval '2 minutes'`),
+        ),
       );
     return value;
   }

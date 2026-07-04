@@ -46,11 +46,11 @@ describe('ClaimService (integration)', () => {
     await container?.stop();
   });
 
-  /** Create an org/project/queue and `count` ready jobs; returns the queue id. */
+  /** Create an org/project/queue and `count` ready jobs; returns queue + org id. */
   async function seedQueue(
     concurrencyLimit: number,
     count: number,
-  ): Promise<string> {
+  ): Promise<{ queueId: string; orgId: string }> {
     const [org] = await db
       .insert(schema.orgs)
       .values({ name: 'O', slug: `o-${Math.random().toString(36).slice(2)}` })
@@ -82,7 +82,7 @@ describe('ClaimService (integration)', () => {
         status: 'ready' as const,
       })),
     );
-    return queue.id;
+    return { queueId: queue.id, orgId: org.id };
   }
 
   async function runningCount(queueId: string): Promise<number> {
@@ -99,12 +99,12 @@ describe('ClaimService (integration)', () => {
   }
 
   it('never hands the same job to two workers (exactly-once)', async () => {
-    const queueId = await seedQueue(1000, 60);
+    const { queueId, orgId } = await seedQueue(1000, 60);
 
     // Eight workers claim aggressively at the same time.
     const results = await Promise.all(
       Array.from({ length: 8 }, (_, i) =>
-        claims.claim(`worker-${i}`, 60, 30_000),
+        claims.claim(`worker-${i}`, orgId, 60, 30_000),
       ),
     );
 
@@ -117,11 +117,11 @@ describe('ClaimService (integration)', () => {
   });
 
   it('never exceeds a queue concurrency limit', async () => {
-    const queueId = await seedQueue(3, 20);
+    const { queueId, orgId } = await seedQueue(3, 20);
 
     await Promise.all(
       Array.from({ length: 6 }, (_, i) =>
-        claims.claim(`worker-${i}`, 20, 30_000),
+        claims.claim(`worker-${i}`, orgId, 20, 30_000),
       ),
     );
 
@@ -130,8 +130,8 @@ describe('ClaimService (integration)', () => {
   });
 
   it('sets a future lease and increments attempts on claim', async () => {
-    const queueId = await seedQueue(10, 1);
-    const [claimed] = await claims.claim('worker-x', 1, 30_000);
+    const { queueId, orgId } = await seedQueue(10, 1);
+    const [claimed] = await claims.claim('worker-x', orgId, 1, 30_000);
 
     const [job] = await db
       .select()

@@ -36,6 +36,7 @@ export class WorkerService implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly pollMs: number;
   private readonly heartbeatMs: number;
   private readonly queues: string[];
+  private readonly orgId?: string;
 
   constructor(
     private readonly claims: ClaimService,
@@ -46,6 +47,7 @@ export class WorkerService implements OnApplicationBootstrap, OnModuleDestroy {
     this.leaseMs = config.get('LEASE_DURATION_MS', { infer: true });
     this.pollMs = config.get('WORKER_POLL_INTERVAL_MS', { infer: true });
     this.heartbeatMs = config.get('HEARTBEAT_INTERVAL_MS', { infer: true });
+    this.orgId = config.get('WORKER_ORG_ID', { infer: true });
     this.queues = config
       .get('WORKER_QUEUES', { infer: true })
       .split(',')
@@ -54,7 +56,15 @@ export class WorkerService implements OnApplicationBootstrap, OnModuleDestroy {
   }
 
   async onApplicationBootstrap(): Promise<void> {
+    if (!this.orgId) {
+      throw new Error(
+        'WORKER_ORG_ID is required — set it to the org this worker serves ' +
+          '(find yours via GET /api/v1/me).',
+      );
+    }
+
     this.workerId = await this.registry.register({
+      orgId: this.orgId,
       hostname: hostname(),
       pid: process.pid,
       queues: this.queues,
@@ -74,13 +84,18 @@ export class WorkerService implements OnApplicationBootstrap, OnModuleDestroy {
 
   /** One claim tick. Guarded so overlapping timers never over-claim. */
   private async poll(): Promise<void> {
-    if (this.draining || this.polling || !this.workerId) return;
+    if (this.draining || this.polling || !this.workerId || !this.orgId) return;
     this.polling = true;
     try {
       const capacity = this.concurrency - this.inFlight.size;
       if (capacity <= 0) return;
 
-      const jobs = await this.claims.claim(this.workerId, capacity, this.leaseMs);
+      const jobs = await this.claims.claim(
+        this.workerId,
+        this.orgId,
+        capacity,
+        this.leaseMs,
+      );
       for (const job of jobs) this.process(job);
     } catch (err) {
       this.logger.error(`Claim failed: ${(err as Error).message}`);

@@ -40,19 +40,22 @@ async function main(): Promise<void> {
 
   try {
     const [existing] = await db
-      .select({ id: schema.users.id })
+      .select({ orgId: schema.users.orgId })
       .from(schema.users)
       .where(eq(schema.users.email, DEMO_ACCOUNT.email))
       .limit(1);
     if (existing) {
       // eslint-disable-next-line no-console
-      console.log(`Demo account already exists: ${DEMO_ACCOUNT.email}`);
+      console.log(
+        `Demo account already exists: ${DEMO_ACCOUNT.email}\n` +
+          `Run its worker with: WORKER_ORG_ID=${existing.orgId}`,
+      );
       return;
     }
 
     const passwordHash = await bcrypt.hash(DEMO_ACCOUNT.password, 10);
 
-    await db.transaction(async (tx) => {
+    const orgId = await db.transaction(async (tx) => {
       const [org] = await tx
         .insert(schema.orgs)
         .values({ name: DEMO_ACCOUNT.orgName, slug: slugify(DEMO_ACCOUNT.orgName) })
@@ -77,11 +80,13 @@ async function main(): Promise<void> {
         name: 'default',
         retryPolicyId: policy.id,
       });
+      return org.id;
     });
 
     // eslint-disable-next-line no-console
     console.log(
-      `Demo account ready: ${DEMO_ACCOUNT.email} / ${DEMO_ACCOUNT.password}`,
+      `Demo account ready: ${DEMO_ACCOUNT.email} / ${DEMO_ACCOUNT.password}\n` +
+        `Run its worker with: WORKER_ORG_ID=${orgId}`,
     );
   } finally {
     await pool.end();

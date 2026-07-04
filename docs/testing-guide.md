@@ -32,8 +32,9 @@ echo "VITE_USE_MOCKS=false" > .env   # talk to the real core
 # 1) API + scheduler + reaper
 cd core && npm run start:dev            # http://localhost:3000
 
-# 2) a worker (start more than one to see a fleet)
-cd core && npm run start:worker:dev
+# 2) a worker FOR YOUR ORG (workers are org-scoped). Find your org id via
+#    GET /api/v1/me, or from the `npm run db:seed-demo` output.
+cd core && WORKER_ORG_ID=<your-org-id> npm run start:worker:dev
 
 # 3) dashboard
 cd web && npm run dev                   # http://localhost:5173
@@ -52,8 +53,9 @@ cd web && npm run dev                   # http://localhost:5173
    `running` → `completed`. Open the job to see its attempt history.
 5. **Overview** — the dashboard shows throughput, success rate, and active
    workers, refreshing as jobs complete.
-6. **Fleet** — the Fleet page lists your worker(s) with live heartbeats and
-   in-flight counts.
+6. **Fleet** — the Fleet page lists your org's worker(s) with live heartbeats
+   and in-flight counts. Workers are org-scoped: a worker only runs the jobs of
+   the org in its `WORKER_ORG_ID`, and each account sees only its own fleet.
 
 ## Exercise reliability
 

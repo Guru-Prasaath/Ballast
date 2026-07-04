@@ -32,6 +32,7 @@ export class ClaimService {
 
   async claim(
     workerId: string,
+    orgId: string,
     maxToClaim: number,
     leaseMs: number,
   ): Promise<ClaimedJob[]> {
@@ -40,6 +41,7 @@ export class ClaimService {
     try {
       await client.query('BEGIN');
 
+      // Scoped to the worker's org — a worker only ever runs its org's jobs.
       const { rows: dueQueues } = await client.query<{
         queue_id: string;
         concurrency_limit: number;
@@ -48,9 +50,11 @@ export class ClaimService {
            FROM jobs j
            JOIN queues q ON q.id = j.queue_id
           WHERE j.status = 'ready'
+            AND j.org_id = $1
             AND j.available_at <= now()
             AND q.paused = false
           ORDER BY j.queue_id`,
+        [orgId],
       );
 
       const claimed: ClaimedJob[] = [];
