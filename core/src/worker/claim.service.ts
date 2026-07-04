@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool, PoolClient } from 'pg';
 import { PG_POOL } from '../database/database.constants';
+import { computeBackoffMs } from '../jobs/backoff';
+import type { BackoffStrategyValue } from '../database/schema';
 
 export interface ClaimedJob {
   id: string;
@@ -152,25 +154,69 @@ export class ClaimService {
     });
   }
 
+  /**
+   * Record a failure and decide the job's fate: retry with backoff while
+   * attempts remain, otherwise dead-letter. Returns the resulting status.
+   */
   async failJob(
     job: ClaimedJob,
     workerId: string,
     error: string,
     startedAtMs: number,
-  ): Promise<void> {
-    await this.withTx(async (client) => {
-      // Retry/backoff and dead-lettering live in Phase 4; here we just record
-      // the failure and release the lease.
-      await client.query(
-        `UPDATE jobs
-            SET status = 'failed',
-                last_error = $2,
-                lease_expires_at = NULL,
-                updated_at = now()
-          WHERE id = $1`,
-        [job.id, error],
-      );
+  ): Promise<'ready' | 'dead'> {
+    return this.withTx(async (client) => {
+      const willRetry = job.attempts < job.maxAttempts;
+
+      if (willRetry) {
+        const {
+          rows: [policy],
+        } = await client.query<{
+          backoff: BackoffStrategyValue;
+          base_delay_ms: number;
+          max_delay_ms: number;
+          jitter: boolean;
+        }>(
+          `SELECT rp.backoff, rp.base_delay_ms, rp.max_delay_ms, rp.jitter
+             FROM jobs j
+             JOIN queues q ON q.id = j.queue_id
+             JOIN retry_policies rp ON rp.id = q.retry_policy_id
+            WHERE j.id = $1`,
+          [job.id],
+        );
+        const delayMs = computeBackoffMs(
+          {
+            backoff: policy.backoff,
+            baseDelayMs: policy.base_delay_ms,
+            maxDelayMs: policy.max_delay_ms,
+            jitter: policy.jitter,
+          },
+          job.attempts,
+        );
+        await client.query(
+          `UPDATE jobs
+              SET status = 'ready',
+                  available_at = now() + ($2::bigint * interval '1 millisecond'),
+                  last_error = $3,
+                  lease_expires_at = NULL,
+                  claimed_by = NULL,
+                  updated_at = now()
+            WHERE id = $1`,
+          [job.id, delayMs, error],
+        );
+      } else {
+        await client.query(
+          `UPDATE jobs
+              SET status = 'dead',
+                  last_error = $2,
+                  lease_expires_at = NULL,
+                  updated_at = now()
+            WHERE id = $1`,
+          [job.id, error],
+        );
+      }
+
       await this.insertAttempt(client, job, workerId, 'failed', error, startedAtMs);
+      return willRetry ? 'ready' : 'dead';
     });
   }
 
@@ -198,12 +244,13 @@ export class ClaimService {
     );
   }
 
-  private async withTx(fn: (client: PoolClient) => Promise<void>): Promise<void> {
+  private async withTx<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await fn(client);
+      const result = await fn(client);
       await client.query('COMMIT');
+      return result;
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;

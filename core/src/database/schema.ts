@@ -244,3 +244,4 @@ export type JobAttempt = typeof jobAttempts.$inferSelect;
 export type Worker = typeof workers.$inferSelect;
 export type JobStatusValue = (typeof jobStatus.enumValues)[number];
 export type JobTypeValue = (typeof jobType.enumValues)[number];
+export type BackoffStrategyValue = (typeof backoffStrategy.enumValues)[number];
