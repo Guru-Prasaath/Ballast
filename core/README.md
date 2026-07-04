@@ -40,6 +40,7 @@ curl -i http://localhost:3000/health
 | `npm run test:int` | Integration tests — **requires Docker** (Testcontainers) |
 | `npm run db:generate` | Generate a migration from `src/database/schema.ts` |
 | `npm run db:migrate` | Apply pending migrations (needs `DATABASE_URL`) |
+| `npm run db:seed-demo` | Create the reviewer demo account (`demo@ballast.dev` / `ballast-demo`) |
 
 ## API
 
