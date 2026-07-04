@@ -30,6 +30,14 @@ npm run dev      # http://localhost:5173  (MSW mock backend starts automatically
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Type-check only |
 | `npm run format` | Prettier write |
+| `npm test` | Run the Vitest suite once |
+| `npm run test:watch` | Vitest in watch mode |
+
+## Testing
+
+Component and unit tests run on **Vitest + Testing Library** (jsdom). They cover
+the interactive, reliability-relevant UI: the auth form wiring, the jobs table
+(rendering, attempts, row selection), the status badges, and formatting helpers.
 
 ## Structure
 
