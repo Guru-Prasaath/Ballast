@@ -2,6 +2,8 @@
 
 Ballast is a distributed, exactly-once job scheduler built on top of PostgreSQL and NestJS. It provides robust, resilient, and deterministic background job processing.
 
+**🚀 Live Demo:** [https://ballast-web.onrender.com/](https://ballast-web.onrender.com/)  
+*(Login: `demo@ballast.dev` / `ballast-demo`)*
 ## Architecture
 
 Ballast consists of three main components:
