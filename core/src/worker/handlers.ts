@@ -38,6 +38,9 @@ export async function runJob(
   type: JobTypeValue,
   payload: Record<string, unknown>,
 ): Promise<unknown> {
+  if (typeof payload.stallMs === 'number') {
+    await sleep(payload.stallMs);
+  }
   if (payload.simulateFailure === true) {
     throw new Error('Simulated job failure');
   }
