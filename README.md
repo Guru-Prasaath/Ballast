@@ -113,6 +113,25 @@ The Core service exposes the following major REST endpoints:
   - `POST /api/v1/advisories/:id/ack`: Acknowledge and dismiss an advisory.
   - `GET /api/v1/live/feed`: Connect to the Server-Sent Events (SSE) stream for real-time dashboard updates.
 
+## Automated Testing
+
+Ballast includes a robust test suite to verify the scheduling invariants and ensure the system recovers gracefully from catastrophic failures.
+
+### Unit Tests
+Run standard unit tests across the core services:
+```bash
+cd core
+npm run test
+```
+
+### Chaos & Integration Tests
+Ballast uses Testcontainers to spin up an isolated PostgreSQL instance and runs true integration tests against the database. The **Chaos Test** (`chaos.int-spec.ts`) specifically tests the `Reaper` service by spawning a child worker process, forcing it to claim jobs, and then brutally terminating it (`kill -9`). It asserts that the system correctly identifies the dead worker, expires the lease, and re-queues the orphaned jobs without data loss.
+
+```bash
+cd core
+npm run test:int
+```
+
 ## Local Development
 
 ### 1. Database
