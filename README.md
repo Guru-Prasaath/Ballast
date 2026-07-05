@@ -53,21 +53,132 @@ The system relies on a strictly normalized relational database to maintain sched
 
 ```mermaid
 erDiagram
-    orgs ||--o{ users : contains
-    orgs ||--o{ projects : contains
-    orgs ||--o{ jobs : owns
-    orgs ||--o{ advisories : receives
+    orgs {
+        uuid id PK
+        text name
+        text slug
+        timestamptz created_at
+    }
     
-    projects ||--o{ queues : contains
-    projects ||--o{ retry_policies : defines
+    users {
+        uuid id PK
+        uuid org_id FK
+        text email
+        text name
+        user_role role
+        text password_hash
+        timestamptz created_at
+    }
     
-    queues ||--o{ jobs : holds
-    retry_policies ||--o{ queues : configures
+    projects {
+        uuid id PK
+        uuid org_id FK
+        text name
+        text slug
+        timestamptz created_at
+    }
     
-    jobs ||--o{ job_attempts : tracks
-    workers ||--o{ job_attempts : executes
+    retry_policies {
+        uuid id PK
+        uuid project_id FK
+        text name
+        int4 max_attempts
+        backoff_strategy backoff
+        int4 base_delay_ms
+        int4 max_delay_ms
+        bool jitter
+        timestamptz created_at
+    }
     
-    jobs |o--o| advisories : triggers
+    queues {
+        uuid id PK
+        uuid project_id FK
+        text name
+        int4 concurrency_limit
+        bool paused
+        uuid retry_policy_id FK
+        timestamptz created_at
+    }
+    
+    workers {
+        uuid id PK
+        uuid org_id FK
+        text hostname
+        int4 pid
+        worker_status status
+        text array queues
+        int4 concurrency
+        int4 in_flight
+        text version
+        timestamptz started_at
+        timestamptz last_heartbeat_at
+    }
+    
+    jobs {
+        uuid id PK
+        uuid org_id FK
+        uuid project_id FK
+        uuid queue_id FK
+        job_type type
+        job_status status
+        jsonb payload
+        int4 priority
+        int4 attempts
+        int4 max_attempts
+        timestamptz available_at
+        timestamptz scheduled_for
+        text cron
+        timestamptz lease_expires_at
+        text claimed_by
+        text last_error
+        jsonb result
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz started_at
+        timestamptz completed_at
+    }
+    
+    job_attempts {
+        uuid id PK
+        uuid job_id FK
+        int4 attempt_number
+        text worker_id
+        attempt_status status
+        text error
+        timestamptz started_at
+        timestamptz finished_at
+        int4 duration_ms
+    }
+    
+    advisories {
+        uuid id PK
+        uuid org_id FK
+        advisory_kind kind
+        advisory_severity severity
+        text title
+        text summary
+        text recommendation
+        float4 confidence
+        uuid job_id FK
+        uuid queue_id FK
+        bool acknowledged
+        timestamptz created_at
+    }
+
+    orgs ||--o{ users : "contains"
+    orgs ||--o{ projects : "contains"
+    orgs ||--o{ jobs : "owns"
+    orgs ||--o{ advisories : "receives"
+    orgs ||--o{ workers : "registers"
+    
+    projects ||--o{ queues : "contains"
+    projects ||--o{ retry_policies : "defines"
+    
+    queues ||--o{ jobs : "holds"
+    retry_policies ||--o{ queues : "configures"
+    
+    jobs ||--o{ job_attempts : "tracks"
+    jobs |o--o| advisories : "triggers"
 ```
 
 ## The Job State Machine & Exactly-Once Guarantees
