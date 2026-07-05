@@ -85,7 +85,28 @@ cd core && npm run test:int
 
 # web — component/unit tests
 cd web && npm test
+
+# ai — advisory-logic unit tests (no DB or network)
+cd ai && pip install -r requirements.txt && pytest
 ```
+
+## AI advisories (optional)
+
+The Python advisory service analyzes failures and writes advisories the
+dashboard renders. It's advisory and asynchronous — the core runs fine without it.
+
+```bash
+cd ai
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env                 # set DATABASE_URL; ANTHROPIC_API_KEY optional
+uvicorn app.main:app --port 8000     # background loop + POST /analyze
+```
+
+With a demo account that has dead-lettered jobs, `curl -X POST localhost:8000/analyze`
+writes an advisory that appears on the dashboard's **AI Advisories** page. Set
+`ANTHROPIC_API_KEY` to have Claude write them; without it a deterministic
+template does, so the pipeline still runs.
 
 CI (GitHub Actions) runs all of the above on every push.
 
