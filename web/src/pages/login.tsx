@@ -83,6 +83,9 @@ export function LoginPage() {
             <span className="font-mono">{DEMO_CREDENTIALS.password}</span>
           </p>
           <p className="mt-0.5">Prefilled — just click Sign in, or create your own.</p>
+          <p className="mt-2 text-[11px] text-muted-foreground/80">
+            Note: On free-tier hosting, the first sign in may take ~60s due to a cold start.
+          </p>
         </div>
       </form>
     </AuthShell>
