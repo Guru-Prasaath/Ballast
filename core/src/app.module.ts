@@ -10,6 +10,14 @@ import { ReaperModule } from './reaper/reaper.module';
 import { FleetModule } from './fleet/fleet.module';
 import { OverviewModule } from './overview/overview.module';
 import { AdvisoriesModule } from './advisories/advisories.module';
+import { WorkerModule } from './worker/worker.module';
+
+// For single-host deploys (e.g. a free-tier dyno): setting RUN_WORKER=true makes
+// the API process also run a worker, so one service covers API + scheduler +
+// reaper + worker. Requires WORKER_ORG_ID. Leave it off to scale workers as
+// separate processes (see src/worker.ts) — exactly-once holds either way because
+// claiming always goes through ClaimService's SKIP LOCKED path.
+const runWorkerInProcess = process.env.RUN_WORKER === 'true';
 
 @Module({
   imports: [
@@ -24,6 +32,7 @@ import { AdvisoriesModule } from './advisories/advisories.module';
     FleetModule,
     OverviewModule,
     AdvisoriesModule,
+    ...(runWorkerInProcess ? [WorkerModule] : []),
   ],
 })
 export class AppModule {}

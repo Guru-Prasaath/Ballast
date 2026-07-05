@@ -1,0 +1,74 @@
+# Render Blueprint — deploys all of Ballast with native buildpacks (no Docker).
+# In the Render dashboard: New → Blueprint → point at this repo. Then set the
+# secrets marked `sync: false` (DATABASE_URL, and optionally ANTHROPIC_API_KEY).
+# See deploy/README.md for the full walkthrough.
+
+services:
+  # API + scheduler + reaper + an in-process worker (RUN_WORKER=true) — one
+  # service runs the whole backend, so it fits on the free tier. Scale workers
+  # out later as separate `type: worker` services if you want.
+  - type: web
+    name: ballast-core
+    runtime: node
+    rootDir: core
+    plan: free
+    healthCheckPath: /health
+    # --include=dev so tsc/tsx are present for the build + migrate + seed steps
+    # (Render sets NODE_ENV=production, which otherwise prunes them).
+    buildCommand: npm ci --include=dev && npm run build && npm run db:migrate && npm run db:seed-demo
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RUN_WORKER
+        value: "true"
+      # The org the in-process worker serves. This is the seeded demo org; if you
+      # deploy against a fresh database, set it to the id `db:seed-demo` prints.
+      - key: WORKER_ORG_ID
+        value: bdf7f438-999c-4089-b35b-6abfd4257602
+      - key: CORS_ORIGIN
+        value: https://ballast-web.onrender.com
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+  # AI advisory service. Optional — the core runs correctly without it. Without
+  # ANTHROPIC_API_KEY it writes advisories from a deterministic template.
+  - type: web
+    name: ballast-ai
+    runtime: python
+    rootDir: ai
+    plan: free
+    healthCheckPath: /health
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  # The dashboard — a static build. VITE_* are baked in at build time.
+  - type: web
+    name: ballast-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci --include=dev && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_USE_MOCKS
+        value: "false"
+      # Point at the deployed core. Adjust if your core service gets a different
+      # URL than the default https://<name>.onrender.com.
+      - key: VITE_API_URL
+        value: https://ballast-core.onrender.com/api/v1
+    routes:
+      # SPA fallback so client-side routes (/app/*) resolve to index.html.
+      - type: rewrite
+        source: /*
+        destination: /index.html
