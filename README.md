@@ -163,6 +163,7 @@ erDiagram
         uuid queue_id FK
         bool acknowledged
         timestamptz created_at
+        vector embedding
     }
 
     orgs ||--o{ users : "contains"
