@@ -34,37 +34,41 @@ class AdvisoryDraft(BaseModel):
 
 
 def draft_advisory(finding: Finding) -> AdvisoryDraft:
-    if settings.uses_claude:
+    if settings.uses_groq:
         try:
-            return _draft_with_claude(finding)
+            return _draft_with_groq(finding)
         except Exception as exc:  # noqa: BLE001 - fall back, never crash the loop
-            log.warning("Claude advisory generation failed: %s", exc)
+            log.warning("Groq advisory generation failed: %s", exc)
     return _draft_with_template(finding)
 
 
-def _draft_with_claude(finding: Finding) -> AdvisoryDraft:
-    from anthropic import Anthropic
+def _draft_with_groq(finding: Finding) -> AdvisoryDraft:
+    from openai import OpenAI
 
-    client = Anthropic(api_key=settings.anthropic_api_key)
+    client = OpenAI(
+        api_key=settings.groq_api_key,
+        base_url="https://api.groq.com/openai/v1",
+    )
     prompt = (
         f"Problem type: {finding.kind}\n"
         f"Severity: {finding.severity}\n"
         f"Queue: {finding.queue_name}\n"
         f"Observation: {finding.headline}\n"
         f"Evidence: {finding.evidence}\n\n"
-        "Produce an advisory for this."
+        "Produce an advisory for this in JSON format with keys: title, summary, recommendation, confidence."
     )
-    resp = client.messages.parse(
+    resp = client.chat.completions.create(
         model=settings.model,
-        max_tokens=1024,
-        system=_SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-        output_format=AdvisoryDraft,
+        messages=[
+            {"role": "system", "content": _SYSTEM},
+            {"role": "user", "content": prompt}
+        ],
+        response_format={"type": "json_object"},
     )
-    draft = resp.parsed_output
-    if draft is None:  # refusal or unparseable
-        raise RuntimeError("no parsed output")
-    return draft
+    content = resp.choices[0].message.content
+    if content is None:  # refusal or unparseable
+        raise RuntimeError("no content output")
+    return AdvisoryDraft.model_validate_json(content)
 
 
 def _draft_with_template(finding: Finding) -> AdvisoryDraft:

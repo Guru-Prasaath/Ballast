@@ -35,7 +35,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(DRIZZLE) private readonly db: Db,
-    private readonly config: ConfigService<Env, true>,
+    @Inject(ConfigService) private readonly config: ConfigService<Env, true>,
   ) {}
 
   onModuleInit(): void {

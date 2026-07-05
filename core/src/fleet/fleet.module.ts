@@ -7,5 +7,6 @@ import { FleetService } from './fleet.service';
   imports: [AuthModule],
   controllers: [FleetController],
   providers: [FleetService],
+  exports: [FleetService],
 })
 export class FleetModule {}

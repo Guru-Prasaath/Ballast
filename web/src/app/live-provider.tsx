@@ -37,48 +37,91 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
   toastRef.current = toast
 
   useEffect(() => {
-    // Against the real API there is no mock socket; TanStack Query's polling
-    // (refetchInterval) keeps the dashboard fresh, so report "live" and return.
-    if (!USE_MOCKS) {
-      setStatus('live')
-      return
-    }
     let active = true
     let cleanup: (() => void) | undefined
 
-    import('@/mocks/live').then(({ createMockLiveSocket }) => {
-      if (!active) return
-      const socket = createMockLiveSocket()
-      setStatus('live')
+    if (USE_MOCKS) {
+      import('@/mocks/live').then(({ createMockLiveSocket }) => {
+        if (!active) return
+        const socket = createMockLiveSocket()
+        setStatus('live')
 
-      const unsubscribe = socket.subscribe((event) => {
-        setLastEventAt(Date.now())
-        switch (event.type) {
-          case 'worker.heartbeat': {
-            const worker = event.payload
-            queryClient.setQueryData<Worker[]>(queryKeys.workers, (prev) =>
-              prev?.map((w) => (w.id === worker.id ? worker : w)),
-            )
-            break
+        const unsubscribe = socket.subscribe((event) => {
+          setLastEventAt(Date.now())
+          switch (event.type) {
+            case 'worker.heartbeat': {
+              const worker = event.payload
+              queryClient.setQueryData<Worker[]>(queryKeys.workers, (prev) =>
+                prev?.map((w) => (w.id === worker.id ? worker : w)),
+              )
+              break
+            }
+            case 'advisory.created': {
+              queryClient.invalidateQueries({ queryKey: queryKeys.advisories })
+              toastRef.current({
+                title: 'New AI advisory',
+                description: event.payload.title,
+              })
+              break
+            }
+            default:
+              break
           }
-          case 'advisory.created': {
-            queryClient.invalidateQueries({ queryKey: queryKeys.advisories })
-            toastRef.current({
-              title: 'New AI advisory',
-              description: event.payload.title,
-            })
-            break
-          }
-          default:
-            break
+        })
+
+        cleanup = () => {
+          unsubscribe()
+          socket.close()
         }
       })
-
-      cleanup = () => {
-        unsubscribe()
-        socket.close()
+    } else {
+      // Connect to the real backend SSE endpoint
+      const handleLiveEvent = (event: MessageEvent) => {
+        setLastEventAt(Date.now())
+        try {
+          const data = JSON.parse(event.data)
+          switch (data.type) {
+            case 'worker.heartbeat': {
+              const worker = data.payload
+              queryClient.setQueryData<Worker[]>(queryKeys.workers, (prev) =>
+                prev?.map((w) => (w.id === worker.id ? worker : w)),
+              )
+              break
+            }
+            case 'advisory.created': {
+              queryClient.invalidateQueries({ queryKey: queryKeys.advisories })
+              toastRef.current({
+                title: 'New AI advisory',
+                description: data.payload.title,
+              })
+              break
+            }
+            default:
+              break
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
       }
-    })
+
+      import('@/lib/api-client').then(({ getAccessToken }) => {
+        import('@/lib/config').then(({ API_BASE }) => {
+          if (!active) return
+          const token = getAccessToken()
+          if (!token) return
+          const source = new EventSource(`${API_BASE}/live/feed?token=${token}`)
+        
+        source.onopen = () => setStatus('live')
+        source.onerror = () => setStatus('connecting')
+        
+        source.onmessage = handleLiveEvent
+
+        cleanup = () => {
+          source.close()
+        }
+        })
+      })
+    }
 
     return () => {
       active = false

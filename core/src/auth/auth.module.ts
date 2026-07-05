@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { MeController } from './me.controller';
@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
  * Authentication: signup/login/refresh and the guarded /me route. Secrets are
  * passed per-sign in TokenService, so JwtModule needs no global registration.
  */
+@Global()
 @Module({
   imports: [JwtModule.register({})],
   controllers: [AuthController, MeController],

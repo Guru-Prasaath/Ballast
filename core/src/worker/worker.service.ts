@@ -1,5 +1,6 @@
 import { hostname } from 'node:os';
 import {
+  Inject,
   Injectable,
   Logger,
   OnApplicationBootstrap,
@@ -39,9 +40,9 @@ export class WorkerService implements OnApplicationBootstrap, OnModuleDestroy {
   private readonly orgId?: string;
 
   constructor(
-    private readonly claims: ClaimService,
-    private readonly registry: WorkerRegistry,
-    config: ConfigService<Env, true>,
+    @Inject(ClaimService) private readonly claims: ClaimService,
+    @Inject(WorkerRegistry) private readonly registry: WorkerRegistry,
+    @Inject(ConfigService) config: ConfigService<Env, true>,
   ) {
     this.concurrency = config.get('WORKER_CONCURRENCY', { infer: true });
     this.leaseMs = config.get('LEASE_DURATION_MS', { infer: true });

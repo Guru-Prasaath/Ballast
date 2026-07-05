@@ -24,11 +24,15 @@ import * as schema from './schema';
       provide: PG_POOL,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => {
-        return new Pool({
+        const pool = new Pool({
           connectionString: config.get('DATABASE_URL', { infer: true }),
           max: 10,
           application_name: 'ballast-core',
         });
+        pool.on('error', (err) => {
+          Logger.error('Unexpected error on idle client', err);
+        });
+        return pool;
       },
     },
     {

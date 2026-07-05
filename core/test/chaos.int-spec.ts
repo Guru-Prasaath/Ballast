@@ -3,7 +3,7 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { spawn } from 'child_process';
 import { DRIZZLE } from '../src/database/database.constants';
@@ -98,7 +98,7 @@ describe('Chaos Recovery (integration)', () => {
       .returning();
 
     // 2. Spawn a worker process with a short lease duration (2 seconds)
-    const workerProcess = spawn('npx', ['tsx', 'src/worker.ts'], {
+    const workerProcess = spawn('node', ['dist/worker.js'], {
       env: {
         ...process.env,
         WORKER_ORG_ID: orgId,

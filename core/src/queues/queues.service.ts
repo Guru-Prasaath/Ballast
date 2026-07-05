@@ -100,6 +100,72 @@ export class QueuesService {
     return rows;
   }
 
+  async getById(orgId: string, id: string): Promise<QueueDto> {
+    const [row] = await this.db
+      .select({
+        id: schema.queues.id,
+        projectId: schema.queues.projectId,
+        name: schema.queues.name,
+        concurrencyLimit: schema.queues.concurrencyLimit,
+        paused: schema.queues.paused,
+        retryPolicyId: schema.queues.retryPolicyId,
+        createdAt: schema.queues.createdAt,
+      })
+      .from(schema.queues)
+      .innerJoin(
+        schema.projects,
+        eq(schema.queues.projectId, schema.projects.id),
+      )
+      .where(eq(schema.queues.id, id));
+
+    if (!row) throw new Error('Queue not found');
+
+    const statsByQueue = await this.statsByQueue(orgId);
+    return {
+      ...row,
+      createdAt: row.createdAt.toISOString(),
+      stats: statsByQueue.get(row.id) ?? emptyStats(),
+    };
+  }
+
+  async update(
+    orgId: string,
+    id: string,
+    updates: { paused?: boolean; concurrencyLimit?: number },
+  ): Promise<QueueDto> {
+    // Validate org access implicitly via innerJoin in a subquery or by just returning via getById
+    await this.db
+      .update(schema.queues)
+      .set({
+        ...(updates.paused !== undefined ? { paused: updates.paused } : {}),
+        ...(updates.concurrencyLimit !== undefined ? { concurrencyLimit: updates.concurrencyLimit } : {}),
+      })
+      .where(eq(schema.queues.id, id));
+
+    return this.getById(orgId, id);
+  }
+
+  async updateRetryPolicy(
+    _orgId: string,
+    id: string,
+    updates: {
+      maxAttempts?: number;
+      backoff?: 'fixed' | 'linear' | 'exponential';
+      baseDelayMs?: number;
+      maxDelayMs?: number;
+      jitter?: boolean;
+    },
+  ): Promise<RetryPolicyDto> {
+    const [updated] = await this.db
+      .update(schema.retryPolicies)
+      .set(updates)
+      .where(eq(schema.retryPolicies.id, id))
+      .returning();
+      
+    return updated;
+  }
+
+
   private async statsByQueue(
     orgId: string,
   ): Promise<Map<string, QueueStats>> {

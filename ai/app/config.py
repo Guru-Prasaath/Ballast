@@ -14,10 +14,10 @@ class Settings:
         # Validated lazily (see database_url) so importing this module never
         # crashes — unit tests and `--help` don't need a database.
         self._database_url = os.getenv("DATABASE_URL")
-        # Claude is used when a key is present; otherwise a deterministic
+        # Groq is used when a key is present; otherwise a deterministic
         # template generates advisory text so the pipeline still runs.
-        self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY") or None
-        self.model = os.getenv("AI_MODEL", "claude-opus-4-8")
+        self.groq_api_key = os.getenv("GROQ_API_KEY") or None
+        self.model = os.getenv("AI_MODEL", "llama-3.3-70b-versatile")
         self.port = int(os.getenv("AI_PORT", "8000"))
         self.analyze_interval_seconds = int(
             os.getenv("ANALYZE_INTERVAL_SECONDS", "300")
@@ -27,8 +27,8 @@ class Settings:
         self.dedup_distance = float(os.getenv("ADVISORY_DEDUP_DISTANCE", "0.12"))
 
     @property
-    def uses_claude(self) -> bool:
-        return self.anthropic_api_key is not None
+    def uses_groq(self) -> bool:
+        return self.groq_api_key is not None
 
     @property
     def database_url(self) -> str:

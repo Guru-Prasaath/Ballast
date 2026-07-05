@@ -49,7 +49,6 @@ export function useOverview() {
     queryKey: queryKeys.overview,
     queryFn: ({ signal }) =>
       apiClient.get<OverviewStats>('/overview', signal),
-    refetchInterval: 15_000,
   })
 }
 
@@ -64,7 +63,6 @@ export function useQueues() {
   return useQuery({
     queryKey: queryKeys.queues,
     queryFn: ({ signal }) => apiClient.get<Queue[]>('/queues', signal),
-    refetchInterval: 15_000,
   })
 }
 
@@ -105,7 +103,6 @@ export function useWorkers() {
   return useQuery({
     queryKey: queryKeys.workers,
     queryFn: ({ signal }) => apiClient.get<Worker[]>('/workers', signal),
-    refetchInterval: 10_000,
   })
 }
 
@@ -148,3 +145,22 @@ export function useAckAdvisory() {
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.advisories }),
   })
 }
+
+export function useUpdateQueue() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: { paused?: boolean; concurrencyLimit?: number } }) =>
+      apiClient.patch<Queue>(`/queues/${id}`, updates),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.queues }),
+  })
+}
+
+export function useUpdateRetryPolicy() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<RetryPolicy> }) =>
+      apiClient.patch<RetryPolicy>(`/retry-policies/${id}`, updates),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.retryPolicies }),
+  })
+}
+

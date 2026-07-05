@@ -11,6 +11,8 @@ import { FleetModule } from './fleet/fleet.module';
 import { OverviewModule } from './overview/overview.module';
 import { AdvisoriesModule } from './advisories/advisories.module';
 import { WorkerModule } from './worker/worker.module';
+import { ProjectsModule } from './projects/projects.module';
+import { LiveModule } from './live/live.module';
 
 // For single-host deploys (e.g. a free-tier dyno): setting RUN_WORKER=true makes
 // the API process also run a worker, so one service covers API + scheduler +
@@ -32,7 +34,9 @@ const runWorkerInProcess = process.env.RUN_WORKER === 'true';
     FleetModule,
     OverviewModule,
     AdvisoriesModule,
+    LiveModule,
     ...(runWorkerInProcess ? [WorkerModule] : []),
+    ProjectsModule,
   ],
 })
 export class AppModule {}

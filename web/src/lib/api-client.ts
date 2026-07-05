@@ -13,6 +13,10 @@ export function setAccessToken(token: string | null) {
   accessToken = token
 }
 
+export function getAccessToken() {
+  return accessToken
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -29,16 +33,72 @@ interface RequestOptions {
   signal?: AbortSignal
 }
 
+let isRefreshing = false
+let refreshQueue: Array<(token: string | null) => void> = []
+
+async function processQueue(token: string | null) {
+  refreshQueue.forEach((cb) => cb(token))
+  refreshQueue = []
+}
+
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`
 
-  const res = await fetch(`${BASE}${path}`, {
+  let res = await fetch(`${BASE}${path}`, {
     method: opts.method ?? 'GET',
     headers,
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     signal: opts.signal,
   })
+
+  // Intercept 401 Unauthorized for token refresh
+  if (res.status === 401 && path !== '/auth/refresh' && path !== '/auth/login') {
+    if (!isRefreshing) {
+      isRefreshing = true
+      try {
+        const refreshRes = await fetch(`${BASE}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        
+        if (refreshRes.ok) {
+          const data = await refreshRes.json()
+          setAccessToken(data.accessToken)
+          await processQueue(data.accessToken)
+        } else {
+          setAccessToken(null)
+          await processQueue(null)
+          // Clear the stale session to break the redirect loop
+          localStorage.removeItem('ballast-session')
+          window.location.href = '/login'
+        }
+      } catch (err) {
+        setAccessToken(null)
+        await processQueue(null)
+        localStorage.removeItem('ballast-session')
+        window.location.href = '/login'
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    // Wait for the refresh to complete
+    const newToken = await new Promise<string | null>((resolve) => {
+      refreshQueue.push(resolve)
+    })
+
+    if (newToken) {
+      // Retry original request with new token
+      headers.Authorization = `Bearer ${newToken}`
+      res = await fetch(`${BASE}${path}`, {
+        method: opts.method ?? 'GET',
+        headers,
+        body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+        signal: opts.signal,
+      })
+    }
+  }
 
   if (!res.ok) {
     let message = res.statusText

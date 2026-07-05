@@ -1,9 +1,13 @@
-import { PauseCircle } from 'lucide-react'
+import { useState } from 'react'
+import { PlayCircle, PauseCircle, Settings2 } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { PageHeader } from '@/components/page-header'
-import { useQueues, useRetryPolicies } from '@/hooks/queries'
+import { useQueues, useRetryPolicies, useUpdateQueue, useUpdateRetryPolicy } from '@/hooks/queries'
 import { cn } from '@/lib/utils'
 import type { JobStatus, Queue, RetryPolicy } from '@/types/api'
 
@@ -55,6 +59,11 @@ export function QueuesPage() {
 }
 
 function QueueCard({ queue, policy }: { queue: Queue; policy?: RetryPolicy }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [concurrency, setConcurrency] = useState(queue.concurrencyLimit.toString())
+  
+  const updateQueue = useUpdateQueue()
+  
   const utilization = Math.min(
     100,
     (queue.stats.running / queue.concurrencyLimit) * 100,
@@ -63,6 +72,15 @@ function QueueCard({ queue, policy }: { queue: Queue; policy?: RetryPolicy }) {
     (s, n) => s + n,
     0,
   )
+
+  const handleSave = () => {
+    updateQueue.mutate({ id: queue.id, updates: { concurrencyLimit: parseInt(concurrency, 10) } })
+    setIsEditing(false)
+  }
+
+  const togglePause = () => {
+    updateQueue.mutate({ id: queue.id, updates: { paused: !queue.paused } })
+  }
 
   return (
     <Card>
@@ -80,26 +98,53 @@ function QueueCard({ queue, policy }: { queue: Queue; policy?: RetryPolicy }) {
             {total} jobs total
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" onClick={togglePause} title={queue.paused ? "Resume Queue" : "Pause Queue"}>
+            {queue.paused ? <PlayCircle className="size-4" /> : <PauseCircle className="size-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)} title="Edit Configuration">
+            <Settings2 className="size-4" />
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div>
-          <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Concurrency</span>
-            <span className="tabular-nums">
-              {queue.stats.running} / {queue.concurrencyLimit}
-            </span>
+        {isEditing ? (
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Concurrency Limit</Label>
+              <Input 
+                type="number" 
+                value={concurrency} 
+                onChange={(e) => setConcurrency(e.target.value)} 
+                className="h-8 text-sm"
+              />
+            </div>
+            {/* Minimal UI for policy edits can be added here if needed */}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleSave}>Save</Button>
+            </div>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className={cn(
-                'h-full rounded-full',
-                utilization >= 100 ? 'bg-state-failed' : 'bg-primary',
-              )}
-              style={{ width: `${Math.max(utilization, 3)}%` }}
-            />
+        ) : (
+          <div>
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Concurrency</span>
+              <span className="tabular-nums">
+                {queue.stats.running} / {queue.concurrencyLimit}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn(
+                  'h-full rounded-full',
+                  utilization >= 100 ? 'bg-state-failed' : 'bg-primary',
+                )}
+                style={{ width: `${Math.max(utilization, 3)}%` }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
           {STAT_ROWS.map((row) => (

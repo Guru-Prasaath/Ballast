@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Env } from '../config/env.schema';
@@ -16,7 +16,7 @@ import type {
 export class TokenService {
   constructor(
     private readonly jwt: JwtService,
-    private readonly config: ConfigService<Env, true>,
+    @Inject(ConfigService) private readonly config: ConfigService<Env, true>,
   ) {}
 
   async issueTokens(payload: AccessTokenPayload): Promise<AuthTokens> {

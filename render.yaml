@@ -36,7 +36,7 @@ services:
         generateValue: true
 
   # AI advisory service. Optional — the core runs correctly without it. Without
-  # ANTHROPIC_API_KEY it writes advisories from a deterministic template.
+  # GROQ_API_KEY it writes advisories from a deterministic template.
   - type: web
     name: ballast-ai
     runtime: python
@@ -50,7 +50,7 @@ services:
         value: 3.12.7
       - key: DATABASE_URL
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: GROQ_API_KEY
         sync: false
 
   # The dashboard — a static build. VITE_* are baked in at build time.

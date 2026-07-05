@@ -31,7 +31,7 @@ export class ReaperService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(PG_POOL) private readonly pool: Pool,
-    private readonly config: ConfigService<Env, true>,
+    @Inject(ConfigService) private readonly config: ConfigService<Env, true>,
   ) {}
 
   onModuleInit(): void {
@@ -53,7 +53,7 @@ export class ReaperService implements OnModuleInit, OnModuleDestroy {
   async reapExpired(): Promise<ReapResult> {
     const { rows } = await this.pool.query<{ status: string }>(
       `UPDATE jobs
-          SET status = CASE WHEN attempts >= max_attempts THEN 'dead' ELSE 'ready' END,
+          SET status = CASE WHEN attempts >= max_attempts THEN 'dead'::job_status ELSE 'ready'::job_status END,
               available_at = now(),
               lease_expires_at = NULL,
               claimed_by = NULL,

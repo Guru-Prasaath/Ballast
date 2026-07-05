@@ -40,9 +40,9 @@ async def _loop() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info(
-        "AI advisory service starting (model=%s, claude=%s, interval=%ss)",
+        "AI advisory service starting (model=%s, groq=%s, interval=%ss)",
         settings.model,
-        settings.uses_claude,
+        settings.uses_groq,
         settings.analyze_interval_seconds,
     )
     task = asyncio.create_task(_loop())
@@ -62,7 +62,7 @@ def health() -> JSONResponse:
         {
             "status": "ok" if ok else "error",
             "db": "up" if ok else "down",
-            "claude": settings.uses_claude,
+            "groq": settings.uses_groq,
         },
         status_code=200 if ok else 503,
     )
