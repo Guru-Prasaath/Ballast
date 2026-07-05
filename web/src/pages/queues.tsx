@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PageHeader } from '@/components/page-header'
-import { useQueues, useRetryPolicies, useUpdateQueue, useUpdateRetryPolicy } from '@/hooks/queries'
+import { useQueues, useRetryPolicies, useUpdateQueue } from '@/hooks/queries'
 import { cn } from '@/lib/utils'
 import type { JobStatus, Queue, RetryPolicy } from '@/types/api'
 
