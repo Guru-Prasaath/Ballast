@@ -106,7 +106,7 @@ erDiagram
         text hostname
         int4 pid
         worker_status status
-        text array queues
+        text_array queues
         int4 concurrency
         int4 in_flight
         text version
